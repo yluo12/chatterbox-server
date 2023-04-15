@@ -1,3 +1,4 @@
+const {database} = require('./database');
 /*************************************************************
 
 You should implement your request handler function in this file.
@@ -28,6 +29,7 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
+
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -37,14 +39,6 @@ var requestHandler = function(request, response) {
   //
   // Documentation for both request and response can be found in the HTTP section at
   // http://nodejs.org/documentation/api/
-  // console.log(request);
-  // console.log('*************');
-  // console.log(request);
-  // console.log(response);
-
-  // callback = (response) => {
-
-  // };
 
   // Do some basic logging.
   //
@@ -64,32 +58,29 @@ var requestHandler = function(request, response) {
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
   headers['Content-Type'] = 'application/json';
-
-  let body = [];
-  console.log(request.url, '**********************************');
-  console.log(request.method, '**********************************');
-  // if (request.url === 'http://127.0.0.1:3000/classes/messages') {
-  if (request.method === 'POST') {
-    request.on('data', (chunk) => {
-      body.push(chunk);
-    });
-    request.on('end', () => {
-      console.log('WORKING  **********************');
-      body = Buffer.concat(body).toString();
-      // response.statusCode = 201;
-      response.writeHead(201, headers);
-      response.end(JSON.stringify(body));
-    });
-  } else if (request.method === 'GET') {
-
+  if (request.url === '/classes/messages') {
+    if (request.method === 'POST') {
+      let body = [];
+      request.on('data', (chunk) => {
+        body.push(chunk);
+      });
+      request.on('end', () => {
+        body = Buffer.concat(body).toString(); // string
+        database.push(JSON.parse(body));
+        response.writeHead(201, headers);
+        response.end(JSON.stringify(body));
+      });
+    } else if (request.method === 'GET') {
+      response.writeHead(200, headers);
+      response.end(JSON.stringify(database));
+    } else if (request.method === 'OPTIONS') {
+      response.writeHead(200, headers);
+      response.end();
+    }
+  } else {
+    response.writeHead(404, headers);
+    response.end('hello world');
   }
-  // } else {
-  //   console.log('THROWING 404 *********************************');
-  //   response.writeHead(404, headers);
-  //   response.end();
-  // }
-  // url methods
-  // http://127.0.0.1:3000/classes/messages
 
 
   // .writeHead() writes to the request line and headers of the response,
@@ -107,4 +98,4 @@ var requestHandler = function(request, response) {
 
 
 
-exports.handleRequest = requestHandler;
+exports.requestHandler = requestHandler;
